@@ -38,4 +38,7 @@ public class ProjectInfoRequest {
 
     @Schema(defaultValue = "Java Version")
     private String javaVersion;
+
+    @Schema(defaultValue = "database name mongodb/mysql and respective fields")
+    private DatabaseInfo databaseInfo;
 }
