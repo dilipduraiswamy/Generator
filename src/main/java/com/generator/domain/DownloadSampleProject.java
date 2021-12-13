@@ -1,6 +1,7 @@
 package com.generator.domain;
 
 import com.generator.dto.ProjectInfoRequest;
+import com.generator.util.CreateControllerUtil;
 import com.generator.util.MoveFileUtil;
 import com.generator.util.UnZipFileUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,9 @@ public class DownloadSampleProject {
     @Autowired
     MoveFileUtil moveFileUtil;
 
+    @Autowired
+    CreateControllerUtil createControllerUtil;
+
     public String download_v2(ProjectInfoRequest projectInfoRequest) throws IOException {
         String finalUri=baseUrl;
         finalUri=addParameterToUrl("type",projectInfoRequest.getTypeOfProject(),finalUri);
@@ -45,8 +49,16 @@ public class DownloadSampleProject {
         finalUri=addParameterToUrl("packaging",projectInfoRequest.getPackaging(),finalUri);
         finalUri=addParameterToUrl("artifactId",projectInfoRequest.getArtifactId(),finalUri);
         finalUri=addParameterToUrl("javaVersion",projectInfoRequest.getJavaVersion(),finalUri);
+        finalUri=addParameterToUrl("dependencies","devtools,web",finalUri);
+        finalUri=addParameterToUrl("packageName","com.example",finalUri);
+        System.out.println(finalUri);
+        String projectName=getGeneratedProject(projectInfoRequest.getProjectName(), finalUri);
 
-        return getGeneratedProject(projectInfoRequest.getProjectName(), finalUri);
+        File file = new File(projectName+"/src/main/java/com/example/controller");
+        boolean dirCreated = file.mkdir();
+
+        createControllerUtil.createController("DefaultController",projectInfoRequest.getGroupId()+".controller",projectName+"/src/main/java/com/example/controller");
+        return "";
     }
 
     public String download_v1(String projectName) throws IOException {
@@ -91,7 +103,7 @@ public class DownloadSampleProject {
             //delete the zip file to clean up memory since we already extracted zip file
             Files.delete(Paths.get(baseFilePath+"/"+ projectName +".zip"));
         }
-        return finalUri;
+        return baseFilePath+"/"+projectName;
     }
 
     public String addParameterToUrl(String key,String value,String uri)
