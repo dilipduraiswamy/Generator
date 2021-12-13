@@ -10,5 +10,5 @@ jobs:
     steps:
       - uses: sfdx-actions/setup-pmd@v1
       - name: run-pmd
-        run: pmd -d ./main/java/com/generator/GeneratorApplication.java -f text -R category/java/design.xml
+        run: pmd -d ../src/main/java/com/generator/GeneratorApplication.java -f text -R category/java/design.xml
         
