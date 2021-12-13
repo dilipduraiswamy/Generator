@@ -1,5 +1,6 @@
 package com.generator.domain;
 
+import com.generator.dto.ProjectInfoRequest;
 import com.generator.util.MoveFileUtil;
 import com.generator.util.UnZipFileUtil;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +34,22 @@ public class DownloadSampleProject {
     @Autowired
     MoveFileUtil moveFileUtil;
 
-    public String download(String projectName) throws IOException {
+    public String download_v2(ProjectInfoRequest projectInfoRequest) throws IOException {
+        String finalUri=baseUrl;
+        finalUri=addParameterToUrl("type",projectInfoRequest.getTypeOfProject(),finalUri);
+        finalUri=addParameterToUrl("language",projectInfoRequest.getLanguage(),finalUri);
+        finalUri=addParameterToUrl("bootVersion",projectInfoRequest.getBootVersion(),finalUri);
+        finalUri=addParameterToUrl("baseDir",getBaseDirName(projectInfoRequest.getProjectName()),finalUri);
+        finalUri=addParameterToUrl("groupId",projectInfoRequest.getGroupId(),finalUri);
+        finalUri=addParameterToUrl("name",projectInfoRequest.getProjectName(),finalUri);
+        finalUri=addParameterToUrl("packaging",projectInfoRequest.getPackaging(),finalUri);
+        finalUri=addParameterToUrl("artifactId",projectInfoRequest.getArtifactId(),finalUri);
+        finalUri=addParameterToUrl("javaVersion",projectInfoRequest.getJavaVersion(),finalUri);
+
+        return getGeneratedProject(projectInfoRequest.getProjectName(), finalUri);
+    }
+
+    public String download_v1(String projectName) throws IOException {
         String type="maven-project";
         String language="java";
         String bootVersion="2.6.1";
@@ -54,6 +70,10 @@ public class DownloadSampleProject {
         finalUri=addParameterToUrl("artifactId",artifactId,finalUri);
         finalUri=addParameterToUrl("javaVersion",javaVersion,finalUri);
 
+        return getGeneratedProject(projectName, finalUri);
+    }
+
+    private String getGeneratedProject(String projectName, String finalUri) throws IOException {
         //download temp zip file from spring initializer
         File file = restTemplate.execute(finalUri, HttpMethod.GET, null, clientHttpResponse -> {
             File ret = File.createTempFile(projectName, ".zip");
@@ -62,14 +82,14 @@ public class DownloadSampleProject {
         });
 
         //move temp zip file to specified folder
-        boolean isMoved=moveFileUtil.moveFile(file.getAbsolutePath(),baseFilePath+"/"+projectName+".zip");
+        boolean isMoved=moveFileUtil.moveFile(file.getAbsolutePath(),baseFilePath+"/"+ projectName +".zip");
 
         if(isMoved){
             //unzip the moved zip file
-            unZipper.unzipFolder(baseFilePath+"/"+projectName+".zip",baseFilePath+"/");
+            unZipper.unzipFolder(baseFilePath+"/"+ projectName +".zip",baseFilePath+"/");
 
             //delete the zip file to clean up memory since we already extracted zip file
-            Files.delete(Paths.get(baseFilePath+"/"+projectName+".zip"));
+            Files.delete(Paths.get(baseFilePath+"/"+ projectName +".zip"));
         }
         return finalUri;
     }
